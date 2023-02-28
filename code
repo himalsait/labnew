@@ -1,0 +1,146 @@
+@page "/"
+
+Welcome to your new app
+
+< SurveyPrompt Title = "How is Blazor working for you?"/>
+
+< Counter IncrementAmount = "10" />
+[6:21 PM]
+Index.Razor file
+[6:21 PM]
+@page "/counter"
+
+< h1 > Counter </ h1 >
+
+< p role = "status" > Current count: @currentCount </ p >
+
+< button class= "btn btn-primary" @onclick = "IncrementCount" > Click me </ button >
+
+@code {
+    private int currentCount = 0;
+
+private void IncrementCount()
+{
+    currentCount++;
+}
+}
+[10:34 PM]
+Counter.Razor file
+[10:34 PM]
+< div class= "top-row ps-3 navbar navbar-dark" >
+    < div class= "container-fluid" >
+        < a class= "navbar-brand" href = "" > BlazorHybridApp </ a >
+        < button title = "Navigation menu" class= "navbar-toggler" @onclick = "ToggleNavMenu" >
+            < span class= "navbar-toggler-icon" ></ span >
+        </ button >
+    </ div >
+</ div >
+
+< div class= "@NavMenuCssClass" @onclick = "ToggleNavMenu" >
+    < nav class= "flex-column" >
+
+        < !--...-->
+
+        < div class= "nav-item px-3" >
+            < NavLink class= "nav-link" href = "" Match = "NavLinkMatch.All" >
+                < span class= "oi oi-home" aria - hidden = "true" ></ span > Home
+            </ NavLink >
+        </ div >
+        < div class= "nav-item px-3" >
+            < NavLink class= "nav-link" href = "counter" >
+                < span class= "oi oi-plus" aria - hidden = "true" ></ span > Counter
+            </ NavLink >
+        </ div >
+        < div class= "nav-item px-3" >
+            < NavLink class= "nav-link" href = "fetchdata" >
+                < span class= "oi oi-list-rich" aria - hidden = "true" ></ span > Fetch data
+            </ NavLink >
+        </ div >
+    </ nav >
+</ div >
+
+@code {
+    private bool collapseNavMenu = true;
+
+private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+private void ToggleNavMenu()
+{
+    collapseNavMenu = !collapseNavMenu;
+}
+}
+[6:21 PM]
+NavMenu.razor file
+[6:22 PM]
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BlazorHybridApp.Data
+{
+    internal class TodoItem
+    {
+        public string? Title { get; set; }
+        public bool IsDone { get; set; } = false;
+    }
+}
+[6:22 PM]
+TodoItem.cs File
+[6:22 PM]
+@page "/todo"
+@using BlazorHybridApp.Data
+@using Microsoft.Maui.Storage
+@using System.IO
+@using System.Text.Json
+
+
+<h3> Todo (@todos.Count(todo => !todo.IsDone))</ h3 >
+
+< button @onclick = "Save" > Save </ button >
+< button @onclick = "Load" > Load </ button >
+
+< ul class= "list-unstyled" >
+    @foreach(var todo in todos)
+    {
+        < li >
+            < input type = "checkbox" @bind = "todo.IsDone" />
+            < input @bind = "todo.Title" />
+        </ li >
+    }
+</ ul >
+
+< input placeholder = "Something todo" @bind = "newTodo" />
+< button > Add todo </ button >
+
+@code {
+    private List<TodoItem> todos = new();
+private string? newTodo;
+private void AddTodo()
+{
+    if (!string.IsNullOrWhiteSpace(newTodo))
+    {
+        todos.Add(new TodoItem { Title = newTodo });
+        newTodo = string.Empty;
+    }
+}
+private async Task Save()
+{
+    var contents = JsonSerializer.Serialize(todos);
+    var path = Path.Combine(FileSystem.AppDataDirectory, "todo.json");
+    File.WriteAllText(path, contents);
+    await App.Current.MainPage.DisplayAlert("List Saved", $"List has been saved to {path}", "OK");
+}
+
+private void Load()
+{
+    var path = Path.Combine(FileSystem.AppDataDirectory, "todo.json");
+    if (!File.Exists(path))
+        return;
+    var contents = File.ReadAllText(path);
+    var savedItems = JsonSerializer.Deserialize<List<TodoItem>>(contents);
+    todos.Clear();
+    todos.AddRange(savedItems);
+}
+}
